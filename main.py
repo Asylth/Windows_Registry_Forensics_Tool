@@ -34,7 +34,7 @@ parser.add_argument('Subject',
                     action='store',
                     nargs=1,
                     default='all',
-                    choices=['system_info', 'autorun','applications','devices', 'all'],
+                    choices=['system_info', 'autorun', 'applications', 'devices', 'all'],
                     type=str,
                     help='''Subject. Which key lists should the script load.
 First argument.''')
@@ -107,8 +107,11 @@ paths=HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Enviro
             except PermissionError:
                 print('Access is denies. Run as Admin')
                 break
-    if Action == 'both' or Action == 'show':
+    if Action == 'both' or Action == 'view':
         print_info()
+        #print('full dict', '\n', key_dic, 'full dict', '\n\n')
+        #print('Current Version and Build Info', '\t', key_dic['Current Version and Build Info'], '\n\n')
+        #print('Auto-Run Applications and Services', '\t', key_dic['Auto-Run Applications and Services'], '\n\n')
     if Action == 'both' or Action == 'export':
         if Filetype == 'txt':
             export_txt(key_dic,'Reg_Key_Export')
@@ -152,7 +155,13 @@ def key_info(hive, path:str, ttl):
             mod = WIN32_TIME + datetime.timedelta(microseconds=QueryInfoKey(key)[2] // 10)
             for i in range(key_info[1]):
                 values.append(EnumValue(key, i))
-            key_dic[ttl] = values, mod.strftime('%m/%d/%Y %H:%M:%S.%f'),path
+            if ttl in dict.keys(key_dic):
+                sum = key_dic[ttl][0]
+                for x in values:
+                    sum.append(x)
+                key_dic[ttl] = sum, mod.strftime('%m/%d/%Y %H:%M:%S.%f')
+            else:
+                key_dic[ttl] = values, mod.strftime('%m/%d/%Y %H:%M:%S.%f')
             return key_dic
     elif config[ttl]['depth'] == '1':
         for skey in get_subkeys(hive,path):
@@ -161,22 +170,8 @@ def key_info(hive, path:str, ttl):
                 mod = WIN32_TIME + datetime.timedelta(microseconds=QueryInfoKey(sub_key)[2] // 10)
                 for n in range(sub_key_info[1]):
                     values.append(EnumValue(sub_key,n))
-                key_dic[ttl] = values, mod.strftime('%m/%d/%Y %H:%M:%S.%f'),skey
+                key_dic[ttl] = values, mod.strftime('%m/%d/%Y %H:%M:%S.%f')
         return key_dic
-        # with OpenKey(hive, path, 0, KEY_ALL_ACCESS) as key:
-        #     key_info = QueryInfoKey(key)
-        #     for i in range(key_info[0]):
-        #         sub_key_name = EnumKey(key,i)
-        #         skey_pth = path+'\\'+sub_key_name
-        #         #print(sub_key_name)
-        #         print(skey_pth)
-        #         with OpenKey(hive,skey_pth,0,KEY_ALL_ACCESS) as sub_key:
-        #             sub_key_info = QueryInfoKey(sub_key)
-        #             mod = WIN32_TIME + datetime.timedelta(microseconds=QueryInfoKey(sub_key)[2] // 10)
-        #             for n in range(sub_key_info[1]):
-        #                 values.append(EnumValue(sub_key,n))
-        #             key_dic[ttl] = values, mod.strftime('%m/%d/%Y %H:%M:%S.%f'),skey_pth
-        #     return key_dic
     else:
         #for nr in range(0,int(config[ttl]['depth'])):
         for skey in get_subkeys(hive, path):
@@ -216,31 +211,6 @@ def resolve_hive(h,pth,i):
         case 'HKEY_CURRENT_CONFIG':
             with ConnectRegistry(None, HKEY_CURRENT_CONFIG) as hive:
                 (key_info(hive,pth,i))
-    # for i in config.sections():
-    #     print(f'''{i} keys...''')
-    #     match config[i]['hive']:
-    #         case 'HKEY_LOCAL_MACHINE':
-    #             with ConnectRegistry(None, HKEY_LOCAL_MACHINE) as hive:
-    #                 # key_lst.append(key_enum(hive, config[i]['path'], i))
-    #                 (key_enum(hive, config[i]['path'], i))
-    #         case 'HKEY_CURRENT_USER':
-    #             with ConnectRegistry(None, HKEY_CURRENT_USER) as hive:
-    #                 # key_lst.append(key_enum(hive, config[i]['path'], i))
-    #                 (key_enum(hive, config[i]['path'], i))
-    #         case 'HKEY_CLASSES_ROOT':
-    #             with ConnectRegistry(None, HKEY_CLASSES_ROOT) as hive:
-    #                 # key_lst.append(key_enum(hive, config[i]['path'], i))
-    #                 (key_enum(hive, config[i]['path'], i))
-    #         case 'HKEY_USERS':
-    #             with ConnectRegistry(None, HKEY_USERS) as hive:
-    #                 #key_lst.append(key_enum(hive, config[i]['path'], i))
-    #                 (key_enum(hive, config[i]['path'], i))
-    #         case 'HKEY_CURRENT_CONFIG':
-    #             with ConnectRegistry(None, HKEY_CURRENT_CONFIG) as hive:
-    #                 # key_lst.append(key_enum(hive, config[i]['path'], i))
-    #                 (key_enum(hive, config[i]['path'], i))
-    #     print(f'''Got registry key "{config[i]['path']}"''')
-    # #return key_lst
 
 #Prints the dictionary of keys
 def print_info():
