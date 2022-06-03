@@ -170,7 +170,13 @@ def key_info(hive, path:str, ttl):
                 mod = WIN32_TIME + datetime.timedelta(microseconds=QueryInfoKey(sub_key)[2] // 10)
                 for n in range(sub_key_info[1]):
                     values.append(EnumValue(sub_key,n))
-                key_dic[ttl] = values, mod.strftime('%m/%d/%Y %H:%M:%S.%f')
+        if ttl in dict.keys(key_dic):
+            sum = key_dic[ttl][0]
+            for x in values:
+                sum.append(x)
+            key_dic[ttl] = sum, mod.strftime('%m/%d/%Y %H:%M:%S.%f')
+        else:
+            key_dic[ttl] = values, mod.strftime('%m/%d/%Y %H:%M:%S.%f')
         return key_dic
     else:
         #for nr in range(0,int(config[ttl]['depth'])):
@@ -181,7 +187,13 @@ def key_info(hive, path:str, ttl):
                     mod = WIN32_TIME + datetime.timedelta(microseconds=QueryInfoKey(sub_key)[2] // 10)
                     for n in range(sub_key_info[1]):
                         values.append(EnumValue(sub_key,n))
-                    key_dic[ttl] = values, mod.strftime('%m/%d/%Y %H:%M:%S.%f'),sskey
+        if ttl in dict.keys(key_dic):
+            sum = key_dic[ttl][0]
+            for x in values:
+                sum.append(x)
+                key_dic[ttl] = sum, mod.strftime('%m/%d/%Y %H:%M:%S.%f')
+            else:
+                key_dic[ttl] = values, mod.strftime('%m/%d/%Y %H:%M:%S.%f')
         return key_dic
 
 def get_subkeys(hive, path):
