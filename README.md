@@ -12,15 +12,8 @@
   
 ### Required libraries for edit and .py script:
   Most should come with python 3.10
-  -configparser
-  -argparse
-  -winreg
-  -os
-  -csv
-  -codecs
-  -datetime
-  
 
+configparser, argparse, winreg, os, csv, codecs, datetime 
 ## Use
   Only works when running as admin!!!
 ### EXE
